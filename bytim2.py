@@ -38,7 +38,7 @@ def handle_client(conn, addr):
                 connected = False
             print(f"[{addr}] {msg}")
             for client_conn, client_addr in connections:
-                send(client_conn, 'Z hendla')
+                send(client_conn, msg)
             print('babka')
     conn.close()
 

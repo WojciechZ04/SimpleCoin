@@ -32,6 +32,5 @@ def receive():
         return msg
 
 # Odbieranie i wyświetlanie wiadomości od serwera
-while True:
-    response = receive()
-    print(f"Server: {response}")
+response = receive()
+print(f"Server: {response}")
