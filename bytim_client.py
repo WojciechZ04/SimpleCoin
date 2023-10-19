@@ -3,7 +3,7 @@ import socket
 
 
 HEADER = 64
-PORT = 5050
+PORT = 5051
 FORMAT = 'utf-8'
 DISCONNECT_MESSAGE = '!DISCONNECT'
 host_name = socket.gethostname()
@@ -22,4 +22,4 @@ def send(msg):
     send_length += b' '*(HEADER - len(send_length))
     client.send(send_length)
     client.send(message)
-send('Klałn!')
+send('Witam!')
