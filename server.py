@@ -9,6 +9,7 @@ class Server(DatagramProtocol):
         datagram = datagram.decode("utf-8")
         if datagram == "ready":
             adresses = "\n".join([str(x) for x in self.clients])
+
             
             self.transport.write(adresses.encode("utf-8"), addr)
             self.clients.add(addr)
