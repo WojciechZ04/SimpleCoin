@@ -9,13 +9,14 @@ class Server(DatagramProtocol):
         datagram = datagram.decode("utf-8")
         if datagram == "ready":
             adresses = "\n".join([str(x) for x in self.clients])
+            print(adresses,'prynt')
 
             
             self.transport.write(adresses.encode("utf-8"), addr)
             self.clients.add(addr)
 
 if __name__ == '__main__':
-    reactor.listenUDP(9999, Server())
+    reactor.listenUDP(9998, Server())
     reactor.run()
 
             

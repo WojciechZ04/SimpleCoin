@@ -2,16 +2,18 @@ from twisted.internet.protocol import DatagramProtocol
 from twisted.internet import reactor
 from random import randint
 import rsa
+from rsa import PublicKey
 
 class Client(DatagramProtocol):
     def __init__(self, host, port, pub_key, priv_key):
         if host == "localhost":
             host = "127.0.0.1"
 
-        self.id = host, port, pub_key
+        self.id = host, port, pub_key, priv_key
         self.address = None
         self.pub_key = pub_key
-        self.server = '127.0.0.1', 9999
+        self.priv_key = priv_key
+        self.server = '127.0.0.1', 9998
 
         print("Working on id:", self.id)
 
@@ -22,23 +24,43 @@ class Client(DatagramProtocol):
         if addr == self.server:
             datagram = datagram.decode("utf-8")
             print("Choose a client from these\n", datagram)
-            self.address = input("write host:"), int(input("write port"))
+            nazwa_hosta = input("write host:")
+            numer_portu = int(input("write port:"))
+
+            nazwa_folderu_pub = f"{numer_portu}public.pem"
+            with open(nazwa_folderu_pub, 'rb') as f:
+                klucz_publiczny = rsa.PublicKey.load_pkcs1(f.read())
+
+            self.address = nazwa_hosta, numer_portu, klucz_publiczny
             reactor.callInThread(self.send_message)
         else:
-            #datagram = datagram.decode("utf-8")
-            datagram = rsa.decrypt(datagram, self.priv_key)
+            # datagram = datagram.decode("utf-8")
+            nazwa_folderu_priv = f"{self.id[1]}private.pem"
+            with open(nazwa_folderu_priv, 'rb') as f:
+                klucz_prywatny = rsa.PrivateKey.load_pkcs1(f.read())
+
+            print(self.priv_key, 'tutaj')
+            datagram = rsa.decrypt(datagram, klucz_prywatny)
             print(addr, ":", datagram)
             
 
     def send_message(self):
         while True:
             msg = input()
-            enc_msg = rsa.encrypt(msg.encode("utf-8"), self.pub_key)
-            self.transport.write(str(enc_msg).encode("utf-8"), self.address)
+            enc_msg = rsa.encrypt(msg.encode("utf-8"), self.address[2])
+            print('Zakodowuje takim kluczem publicznym:', self.address[2])
+            self.transport.write(str(enc_msg).encode("utf-8"), (self.address[0], self.address[1]))
 
 if __name__ == '__main__':
     port = randint(1000, 5000)
     pub_key, priv_key = rsa.newkeys(1024)
+    nazwa_pliku = f"{port}public.pem"
+    with open(nazwa_pliku, "wb") as f:
+        f.write(pub_key.save_pkcs1("PEM"))
+
+    nazwa_pliku1 = f"{port}private.pem"
+    with open(nazwa_pliku1, "wb") as f:
+        f.write(priv_key.save_pkcs1("PEM"))
     reactor.listenUDP(port, Client('localhost', port, pub_key, priv_key))
     reactor.run()
     
