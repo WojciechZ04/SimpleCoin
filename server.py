@@ -11,12 +11,16 @@ class Server(DatagramProtocol):
             adresses = "\n".join([str(x) for x in self.clients])
             print(adresses,'prynt')
 
-            
             self.transport.write(adresses.encode(), addr)
             self.clients.add(addr)
 
+        if datagram == "GMAC":
+            self.transport.write(adresses.encode(), addr)
+
+
+
 if __name__ == '__main__':
-    reactor.listenUDP(9999, Server())
+    reactor.listenUDP(9998, Server())
     reactor.run()
 
             
