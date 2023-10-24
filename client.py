@@ -22,33 +22,59 @@ class Client(DatagramProtocol):
     def datagramReceived(self, datagram, addr):
         if addr == self.server:
             datagram = datagram.decode("utf-8")
-            print("Choose a client from these\n", datagram)
-            nazwa_hosta = input("write host:")
-            numer_portu = int(input("write port:"))
+            if datagram.startswith("Jestem") == False:
+                print("Choose a client from these\n", datagram)
+                nazwa_hosta = '127.0.0.1'
+                numer_portu = int(input("write port:"))
 
-            nazwa_folderu_pub = f"{numer_portu}public.pem"
-            with open(nazwa_folderu_pub, 'rb') as f:
-                klucz_publiczny = rsa.PublicKey.load_pkcs1(f.read())
+                nazwa_folderu_pub = f"{numer_portu}public.pem"
+                with open(nazwa_folderu_pub, 'rb') as f:
+                    klucz_publiczny = rsa.PublicKey.load_pkcs1(f.read())
 
-            self.address = nazwa_hosta, numer_portu, klucz_publiczny
-            reactor.callInThread(self.send_message)
+                self.address = nazwa_hosta, numer_portu, klucz_publiczny
+                reactor.callInThread(self.send_message)
 
         else:
             # datagram = datagram.decode("utf-8")
             nazwa_folderu_priv = f"{self.id[1]}private.pem"
-            with open(nazwa_folderu_priv, 'rb') as f:
-                klucz_prywatny = rsa.PrivateKey.load_pkcs1(f.read())
 
-            print('Odkodowujemy takim plkiem:', klucz_prywatny)
-            datagram = rsa.decrypt(datagram, klucz_prywatny)
-            datagram = datagram.decode("utf-8")
+            ##########
+
+            ###########
+
+
+            # datagram1 = datagram.decode("utf-8")
+            if 'wiadomo' in str(datagram):
+                datagram = datagram.decode("utf-8")
+            else:
+                ####
+                nazwa_folderu_pub = f"{addr[1]}public.pem"
+                with open(nazwa_folderu_priv, 'rb') as f:
+                    klucz_prywatny = rsa.PrivateKey.load_pkcs1(f.read())
+                with open(nazwa_folderu_pub, 'rb') as f:
+                    klucz_publiczny = rsa.PublicKey.load_pkcs1(f.read())
+                with open(f"{addr[1]}signature", "rb") as f:
+                    signature = f.read()
+                print('Czyim kluczem sprawdzane?', addr[1])
+                print(rsa.verify(datagram, signature, klucz_publiczny))
+                print('Odkodowujemy takim plkiem:', klucz_prywatny)
+                ####
+                datagram = rsa.decrypt(datagram, klucz_prywatny)
+                datagram = datagram.decode("utf-8")
+
             print(addr, ":", datagram)
+
+        if addr == self.server:
+            if datagram.startswith("Jestem"):
+                print(datagram, 'Tu jest ten nowy')
+
+
 
     def send_message(self):
         while True:
             msg = input()
             if msg.startswith("[Add nodes]"):
-                nowy_host = input("write host:")
+                nowy_host = '127.0.0.1'
                 nowy_port = int(input("write port:"))
                 nazwa_folderu_pub1 = f"{nowy_port}public.pem"
                 with open(nazwa_folderu_pub1, 'rb') as f:
@@ -60,16 +86,35 @@ class Client(DatagramProtocol):
             # signature = rsa.sign(msg.encode(), private_key, "SHA-256")
             # with open("signature", "wb") as f:
             #     f.write(signature)
-            if msg.startswith("[Add nodes]") == False and msg.startswith("[Give me all clients]") == False:
-                for i in range(0,len(self.address),3):
-                    if i < len(self.address)-2:
-                        enc_msg = rsa.encrypt(msg.encode("utf-8"), self.address[i+2])
-                        print('Zakodowuje takim kluczem publicznym:', self.address[i+2])
-                        self.transport.write(enc_msg, (self.address[i], self.address[i+1]))
-                        # self.transport.write(('my adresses' + str(self.address)).encode(), (self.address[i], self.address[i+1]))
+            if msg.startswith("[Add nodes]") == False:
+                # a = int(input('Chcesz wysłac do kadego? 0, Do konkretnego wezla? 1 '))
+                # if a == 0:
+                #     for i in range(0,len(self.address),3):
+                #         if i < len(self.address)-2:
+                #             enc_msg = rsa.encrypt(msg.encode("utf-8"), self.address[i+2])
+                #             print('Zakodowuje takim kluczem publicznym:', self.address[i+2])
+                #             self.transport.write(enc_msg, (self.address[i], self.address[i+1]))
+                # if a == 1:
+                port = int(input('Podaj port wezla'))
+                with open(f"{port}public.pem", 'rb') as f:
+                    kl_pub = rsa.PublicKey.load_pkcs1(f.read())
+                enc_msg = rsa.encrypt(msg.encode("utf-8"), kl_pub)
 
-            if msg.startswith("[Give me all clients]"):
-                self.transport.write("GMAC".encode("utf-8"), self.server),
+                signature = rsa.sign(enc_msg, self.priv_key, "SHA-256")
+                print(f"Port podpisującego/wysyłającego: {self.id[1]}")
+                with open(f"{self.id[1]}signature", "wb") as f:
+                    f.write(signature)
+                print('Zakodowuje takim kluczem publicznym:', kl_pub)
+
+                self.transport.write(enc_msg, ('127.0.0.1', port))
+
+                for i in range(0,len(self.address),3):
+                    if i < len(self.address) - 2:
+                        self.transport.write(f"Wezeł {self.id[1]} wysłał wiadomość do wezła {port}".encode("utf-8"), (self.address[i], self.address[i+1]))
+
+
+
+
 
             # print('Zakodowuje takim kluczem publicznym:', self.address[2])
             # self.transport.write(enc_msg, (self.address[0], self.address[1]))
