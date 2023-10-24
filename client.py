@@ -2,7 +2,7 @@ from twisted.internet.protocol import DatagramProtocol
 from twisted.internet import reactor
 from random import randint
 import rsa
-from rsa import PublicKey
+
 
 class Client(DatagramProtocol):
     def __init__(self, host, port, pub_key, priv_key):
@@ -13,7 +13,7 @@ class Client(DatagramProtocol):
         self.address = None
         self.pub_key = pub_key
         self.priv_key = priv_key
-        self.server = '127.0.0.1', 9998
+        self.server = '127.0.0.1', 9999
 
         print("Working on id:", self.id)
 
@@ -39,17 +39,24 @@ class Client(DatagramProtocol):
             with open(nazwa_folderu_priv, 'rb') as f:
                 klucz_prywatny = rsa.PrivateKey.load_pkcs1(f.read())
 
-            print(self.priv_key, 'tutaj')
+            print('Odkodowujemy takim plkiem:', klucz_prywatny)
             datagram = rsa.decrypt(datagram, klucz_prywatny)
+            datagram = datagram.decode("utf-8")
             print(addr, ":", datagram)
-            
+            if datagram.startswith("[ALL]"):
+                while True:
+                    enc_msg = rsa.encrypt(datagram.encode("utf-8"), self.address[2])
+                    print('Zakodowuje takim kluczem publicznym:', self.address[2])
+                    self.transport.write(enc_msg, (self.address[0], self.address[1]))
+                    break
+
 
     def send_message(self):
         while True:
             msg = input()
             enc_msg = rsa.encrypt(msg.encode("utf-8"), self.address[2])
             print('Zakodowuje takim kluczem publicznym:', self.address[2])
-            self.transport.write(str(enc_msg).encode("utf-8"), (self.address[0], self.address[1]))
+            self.transport.write(enc_msg, (self.address[0], self.address[1]))
 
 if __name__ == '__main__':
     port = randint(1000, 5000)
