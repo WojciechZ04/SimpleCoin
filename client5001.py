@@ -20,7 +20,7 @@ class Client(DatagramProtocol):
         self.address = 5000
         self.pub_key = pub_key
         self.priv_key = priv_key
-        self.server = '127.0.0.1', 9998
+        self.server = '127.0.0.1', 9990
 
         print(self.blockchain)
         print("Working on id:", self.id)
@@ -28,13 +28,13 @@ class Client(DatagramProtocol):
     def startProtocol(self):
         self.transport.write("ready".encode("utf-8"), self.server)
 
-    # def datagramReceived(self, datagram, addr):
-    #     if addr == self.server:
-    #         datagram = datagram.decode("utf-8")
-    #         if datagram.startswith("Jestem") == False:
-    #             print("Choose a client from these\n", datagram)
-    #             nazwa_hosta = '127.0.0.1'
-    #             numer_portu = int(input("write port:"))
+    def datagramReceived(self, datagram, addr):
+        if addr == self.server:
+            datagram = datagram.decode("utf-8")
+            if datagram.startswith("Jestem") == False:
+                print("Choose a client from these\n", datagram)
+                nazwa_hosta = '127.0.0.1'
+                numer_portu = 5000
     #
     #             nazwa_folderu_pub = f"{numer_portu}public.pem"
     #             with open(nazwa_folderu_pub, 'rb') as f:

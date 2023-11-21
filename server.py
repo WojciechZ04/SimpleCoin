@@ -19,7 +19,7 @@ class Server(DatagramProtocol):
                 # print(lista, 'lista')
                 for i in range(len(lista)):
                     # print(lista[i])
-                    self.transport.write(('Jestem nowym nodem, o to moj adres' + str(addr)).encode(), lista[i])
+                    self.transport.write(('Jestem nowym nodem, oto moj adres' + str(addr)).encode(), lista[i])
 
             self.transport.write(addresses.encode(), addr)
             self.clients.add(addr)
@@ -71,5 +71,5 @@ if __name__ == '__main__':
     terminal_thread = threading.Thread(target=run_terminal)
     terminal_thread.start()
 
-    reactor.listenUDP(9998, server)
+    reactor.listenUDP(9990, server)
     reactor.run()
