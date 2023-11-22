@@ -18,7 +18,7 @@ class Client(DatagramProtocol):
         self.address = None
         self.pub_key = pub_key
         self.priv_key = priv_key
-        self.server = '127.0.0.1', 9993
+        self.server = '127.0.0.1', 9991
 
         print("Working on id:", self.id)
 
@@ -68,18 +68,23 @@ class Client(DatagramProtocol):
                 datagram = rsa.decrypt(datagram, klucz_prywatny)
                 datagram = datagram.decode("utf-8")
 
-                prev_hash = datagram.split('"')[1]
-                prev_hash = bytes.fromhex(prev_hash)
-                print(prev_hash, 'prefhasz')
+
+                # prev_hash = self.blockchain[-1]
+                # prev_hash.mine(10)
+                # print(prev_hash, 'prefhasz')
                 data = datagram.split('"')[3]
                 nonce = datagram.split('"')[4]
-                nowy_blok = block.Block(data = data, prev_hash=prev_hash, nonce= nonce)
+                nowy_blok = block.Block(data = data, prev_hash=self.blockchain[-1].hash, nonce= nonce)
+                nowy_blok.mine(10)
                 chain.add_to_chain(nowy_blok)
 
 
 
 
             print(addr, ":", datagram)
+            print('Cały blockchain:')
+            for ele in self.blockchain:
+                print(ele.hash.hexdigest(),ele.data)
 
         if addr == self.server:
             if datagram.startswith("Jestem"):
@@ -130,7 +135,7 @@ class Client(DatagramProtocol):
                 data = input("Write block data: ")
                 chain.add_to_pool(data)
                 block = chain.mine()
-                print(block.hash, block.data, 'rur2')
+
 
                 print('Po dodaniu bloku:')
                 print(len(self.blockchain), 'ilosc blokow w blockchanie')

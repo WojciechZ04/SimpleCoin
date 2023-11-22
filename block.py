@@ -11,7 +11,6 @@ class Block:
         self.hash.update(str(self).encode('utf-8'))
         while int(self.hash.hexdigest(), 16) > 2 ** (256 - difficulty):
             self.nonce += 1
-            print(self.nonce)
             self.hash = hashlib.sha256()
             self.hash.update(str(self).encode('utf-8'))
 
@@ -36,9 +35,6 @@ class Block:
 
 
     def __str__(self):
-        print(self.prev_hash, 'samo self prevhasz')
-        print(self.data)
-        print(self.nonce)
         return f"{self.prev_hash.hexdigest()}{self.data}{self.nonce}"
 
 

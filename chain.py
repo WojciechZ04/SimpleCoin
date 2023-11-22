@@ -18,6 +18,7 @@ class Chain:
         if self.proof_of_work(block):
             self.blocks.append(block)
             print("Block added successfully.")
+
         else:
             print('Nie suksesfuli')
 
