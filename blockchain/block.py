@@ -1,19 +1,15 @@
 import hashlib
-
+import time
 
 class Block:
-    def __init__(self, data, prev_hash):
-        self.hash = hashlib.sha256()
+    def __init__(self, index, transactions, prev_hash, timestamp=None, nonce=0):
+        self.index = index
+        self.transactions = transactions
         self.prev_hash = prev_hash
-        self.nonce = 0
-        self.data = data
+        self.timestamp = timestamp or time.time()
+        self.nonce = nonce
+        self.hash = self.calculate_hash()
 
-    def mine(self, difficulty):
-        self.hash.update(str(self).encode('utf-8'))
-        while int(self.hash.hexdigest(), 16) > 2 ** (256 - difficulty):
-            self.nonce += 1
-            self.hash = hashlib.sha256()
-            self.hash.update(str(self).encode('utf-8'))
-
-    def __str__(self):
-        return f"{self.prev_hash.hexdigest()}{self.data}{self.nonce}"
+    def calculate_hash(self):
+        block_string = f"{self.index}{self.transactions}{self.prev_hash}{self.timestamp}{self.nonce}"
+        return hashlib.sha256(block_string.encode('utf-8')).hexdigest()

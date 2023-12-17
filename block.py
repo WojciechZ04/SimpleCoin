@@ -16,25 +16,24 @@ class Block:
 
     def to_dict_nonce(self):
         return self.nonce
+
     def to_dict_prev_hash(self):
         return self.prev_hash.hexdigest()
+
     def to_dict_data(self):
         return self.data
-
 
     def to_json_nonce(self):
         block_dict = self.to_dict_nonce()
         return json.dumps(block_dict)
+
     def to_json_prev_hash(self):
         block_dict = self.to_dict_prev_hash()
         return json.dumps(block_dict)
+
     def to_json_data(self):
         block_dict = self.to_dict_data()
         return json.dumps(block_dict)
 
-
-
     def __str__(self):
         return f"{self.prev_hash.hexdigest()}{self.data}{self.nonce}"
-
-
