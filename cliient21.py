@@ -15,9 +15,9 @@ class Server(DatagramProtocol):
             if len(self.clients) > 0:
                 lista = list(self.clients)
                 print(lista, 'lista')
-                for i in range(len(lista)):
-                    print(lista[i])
-                    self.transport.write(('Jestem nowym nodem, oto moj adres' +str(addr)).encode(), lista[i])
+                # for i in range(len(lista)):
+                #     print(lista[i])
+                #     self.transport.write(('Jestem nowym nodem, oto moj adres' +str(addr)).encode(), lista[i])
 
             self.transport.write(adresses.encode(), addr)
             self.clients.add(addr)
@@ -27,7 +27,7 @@ class Server(DatagramProtocol):
 
 
 if __name__ == '__main__':
-    reactor.listenUDP(9991, Server())
+    reactor.listenUDP(9000, Server())
     reactor.run()
 
             
